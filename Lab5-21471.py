@@ -13,13 +13,12 @@ import os
 # Task 1.1 - Graph Search
 
 # Funcion que toma la imagen y la convierte en una matriz de pixeles
-def load_and_discretize_image(image_path, block_size=5):
+def load_and_discretize_image(image_path, block_size=1):
     image = Image.open(image_path).convert('RGB')
     image_array = np.array(image)
     
     height, width, _ = image_array.shape
     
-    # Definimos los colores que se van a utilizar
     color_map = {(255, 255, 255): 0, (0, 0, 0): 1, (5, 252, 6): 2, (254, 0, 0): 3}
     
     # Convertimos la imagen a una matriz de colores discretos
@@ -27,7 +26,7 @@ def load_and_discretize_image(image_path, block_size=5):
     discretized_matrix = np.array([color_map.get(tuple(pixel), 0) for pixel in flattened])
     discretized_matrix = discretized_matrix.reshape(height, width)
     
-    # Reducimos la imagen a pixeles manejables
+    # Pixeleamos la imagen
     new_height = height // block_size
     new_width = width // block_size
     reduced_matrix = np.full((new_height, new_width), -1, dtype=int)
@@ -39,6 +38,7 @@ def load_and_discretize_image(image_path, block_size=5):
             most_frequent = unique[np.argmax(counts)]
             reduced_matrix[i, j] = most_frequent
     
+    print(f"Discretized matrix:\n{reduced_matrix}")
     return reduced_matrix
 
 # Task 1.2 - Framework de problemas
@@ -47,8 +47,12 @@ class MazeProblem(ABC):
     def __init__(self, maze_matrix):
         self.maze = maze_matrix
         self.height, self.width = maze_matrix.shape
-        self.start = self.find_position(3)  # Encuentra la posición inicial (rojo)
-        self.goals = self.find_positions(2)  # Encuentra las posiciones meta (verde)
+        self.start = self.find_position(3)  # Puntos de inicio (punto rojo)
+        self.goals = self.find_positions(2)  # Puntos de llegada (punto/s verde/s)
+        
+        # Posiciones de inicio y metas
+        # print(f"Start position (red): {self.start}")
+        # print(f"Goal positions (green): {self.goals}")
 
     # Funcion que encuentra la primera posicion en la matriz
     def find_position(self, value):
@@ -88,7 +92,7 @@ class MazeSolver(MazeProblem):
         for move in self.moves:
             new_state = (state[0] + move[0], state[1] + move[1])
             if 0 <= new_state[0] < self.height and 0 <= new_state[1] < self.width:
-                if self.maze[new_state] != 1:  # No puede moverse a paredes
+                if self.maze[new_state] != 1:  # Bloquea los puntos negros y los identifica como paredes
                     valid_actions.append(move)
         return valid_actions
     
@@ -96,13 +100,13 @@ class MazeSolver(MazeProblem):
     def result(self, state, action):
         return (state[0] + action[0], state[1] + action[1])
     
-    # Funcion que verifica si el estado actual es un objetivo
+    # Funcion que verifica si el estado actual es la meta
     def goal_test(self, state):
         return state in self.goals
     
     # Funcion que devuelve el costo de un paso
     def step_cost(self, state, action, next_state):
-        return 1  # Costo uniforme para cada movimiento
+        return 1
     
 # Task 1.3 - Graph Search Algorithms
 
@@ -149,7 +153,7 @@ class BFS(GraphSearch):
 class DFS(GraphSearch):
     
     def search(self):
-        frontier = [self.problem.start]  # Pila para DFS
+        frontier = [self.problem.start]
         explored = set()
         parent_map = {self.problem.start: None}
         
@@ -215,9 +219,13 @@ class AStar(GraphSearch):
 
 # Definición de heurísticas para A*
 def manhattan_heuristic(state, goals):
+    if not goals:
+        return float('inf')  # Retornar un valor grande si no hay metas
     return min(abs(state[0] - g[0]) + abs(state[1] - g[1]) for g in goals)
 
 def euclidean_heuristic(state, goals):
+    if not goals:
+        return float('inf')  # Retornar un valor grande si no hay metas
     return min(((state[0] - g[0]) ** 2 + (state[1] - g[1]) ** 2) ** 0.5 for g in goals)
 
 # Task 1.4 - Visualización de la Solución
@@ -226,8 +234,8 @@ def euclidean_heuristic(state, goals):
 def visualize_solution(maze, path, original_filename):
     maze_copy = np.copy(maze)
     for pos in path:
-        if maze_copy[pos] not in [2, 3]:  # Evitar sobreescribir inicio y meta
-            maze_copy[pos] = 4  # Marcar el camino con un número diferente
+        if maze_copy[pos] not in [2, 3]:
+            maze_copy[pos] = 4
     
     cmap = plt.cm.colors.ListedColormap(["white", "black", "green", "red", "blue"])
     plt.imshow(maze_copy, cmap=cmap)
@@ -241,14 +249,35 @@ def visualize_solution(maze, path, original_filename):
     plt.imsave(solution_filename, maze_copy, cmap=cmap)
 
 # Main
+
 if __name__ == "__main__":
-    
-    image_path = './images/Prueba-Lab1.bmp'
+    # image_path = './images/Test.bmp'
+    image_path = './images/Test2.bmp'
+    # image_path = './images/Prueba-Lab1.bmp'
+    # image_path = './images/turing.bmp'
     maze_matrix = load_and_discretize_image(image_path)
     problem = MazeSolver(maze_matrix)
     
-    bfs_solver = BFS(problem)
-    solution_path = bfs_solver.search()
+    solvers = [
+        ("BFS", BFS(problem)),
+        ("DFS", DFS(problem)),
+        ("A* (Manhattan)", AStar(problem, manhattan_heuristic)),
+        ("A* (Euclidean)", AStar(problem, euclidean_heuristic))
+    ]
     
-    if solution_path:
-        visualize_solution(maze_matrix, solution_path, image_path)
+    solution_found = False
+    
+    for solver_name, solver in solvers:
+        print(f"Trying {solver_name}...")
+        solution_path = solver.search()
+        
+        if solution_path:
+            # print(f"{solver_name} Solution Path:", solution_path)
+            visualize_solution(maze_matrix, solution_path, image_path)
+            solution_found = True
+            break
+        else:
+            print(f"No hay una solución encontrada para {solver_name}")
+    
+    if not solution_found:
+        print("No se encontró una solución para el problema.")
