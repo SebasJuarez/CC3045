@@ -23,7 +23,7 @@ pip install pygame numpy
 Ejecuta el script principal:
 
 ```sh
-python main.py
+python ConnectFour.py
 ```
 
 ### Controles
