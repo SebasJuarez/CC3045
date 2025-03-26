@@ -1,23 +1,27 @@
-# Laboratorio 6
+# Laboratorio 7
 
-Este es un juego de **Connect Four** desarrollado en **Python**. En este se permite jugar contra una **IA básica** o ver una partida de IA vs IA. 
+Este es un juego de **Connect Four** desarrollado en **Python**. En este se permite jugar contra una **IA básica** o ver una partida de IA vs IA en diferentes modos. 
 
 ## Inspiración y links
-El codigo de la logica se hizo tomando en cuenta el codigo del [Gym Connect Four de OpenAI](https://github.com/IASIAI/gym-connect-four).
+El código de la lógica se hizo tomando en cuenta el código del [Gym Connect Four de OpenAI](https://github.com/IASIAI/gym-connect-four).
 Link al [video](https://youtu.be/folwdBaiDYQ)
 
 ## Características
 - Interfaz gráfica con **Pygame**.
 - **Modo PvAI**: Juega contra una inteligencia artificial simple.
 - **Modo AI vs AI**: Observa dos IA jugando entre sí.
-- **Activacion del modo alpha-beta pruning**
+- **Activación del modo alpha-beta pruning**
+- **IA con aprendizaje por refuerzo (Q-learning)**: La IA TD aprende de sus partidas.
+- **Modo Minimax vs TD** y **Minimax+AB vs TD**, en 1 o múltiples partidas.
+- **Modo TD vs TD**, para observar o evaluar partidas entre dos agentes que aprenden.
+- **Estadísticas con gráficas** después de múltiples partidas.
 
 ## Instalación
 
 Para ejecutar este proyecto, primero necesitas instalar las dependencias necesarias:
 
 ```sh
-pip install pygame numpy
+pip install pygame numpy matplotlib
 ```
 
 ## Cómo jugar
@@ -38,4 +42,3 @@ El juego se desarrolla de la siguiente manera:
 3. Se verifica si hay una condición de victoria.
 4. Se alterna el turno entre el jugador y la IA.
 5. El juego termina si alguien gana o el tablero se llena.
-
