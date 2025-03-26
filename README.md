@@ -4,7 +4,7 @@ Este es un juego de **Connect Four** desarrollado en **Python**. En este se perm
 
 ## Inspiración y links
 El código de la lógica se hizo tomando en cuenta el código del [Gym Connect Four de OpenAI](https://github.com/IASIAI/gym-connect-four).
-Link al [video](https://youtu.be/folwdBaiDYQ)
+Link al [video](https://youtu.be/p_t3iTzLMPI)
 
 ## Características
 - Interfaz gráfica con **Pygame**.
